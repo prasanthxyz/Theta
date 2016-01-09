@@ -3,7 +3,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
 from food_suggestion.models import Item
-from food_suggestion.serializers import ItemSerializer, MealCombinationSerializer
+from food_suggestion.serializers import ItemSerializer, HalfCourseCombSerializer
 
 
 @api_view(['GET', 'POST'])
@@ -68,13 +68,25 @@ def get_suggestions(request, hotel_name, money, people, option):
     starter_money = money * split[1]
     dessert_money = money * split[2]
 
-    items = Item.objects.filter(hotel_name=hotel_name, price__lte=(money / people))
-    meal_combs = get_meal_combs(items, meal_money)
-    serializer = MealCombinationSerializer(meal_combs, many=True)
-    return Response(serializer.data)
+    items = Item.objects.filter(hotel_name=hotel_name, price__lte=(money/people))
+
+    full_courses = items.filter(category='full course', price__lte=(meal_money/people)).order_by('rating')
+    full_courses_serializer = ItemSerializer(full_courses, many=True)
+    half_course_curry_combs = get_half_course_curry_combs(items, (meal_money/people))
+    half_course_curry_combs_serializer = HalfCourseCombSerializer(half_course_curry_combs, many=True)
+    meals = half_course_curry_combs_serializer.data
+    meals.extend(full_courses_serializer.data)
+
+    starters = items.filter(category='starter', price__lte=(starter_money/people)).order_by('rating')
+    starters_serializer = ItemSerializer(starters, many=True)
+
+    desserts = items.filter(category='dessert', price__lte=(dessert_money/people)).order_by('rating')
+    desserts_serializer = ItemSerializer(desserts, many=True)
+
+    return Response([meals, starters_serializer.data, desserts_serializer.data])
 
 
-def get_meal_combs(items, money):
+def get_half_course_curry_combs(items, money):
     half_courses = items.filter(category='half course').order_by('rating')
     curries = items.filter(category='curry').order_by('rating')
     combs = []

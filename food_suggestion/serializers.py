@@ -7,6 +7,6 @@ class ItemSerializer(serializers.ModelSerializer):
         fields = ('id', 'hotel_name', 'name', 'rating', 'price', 'category', 'veg')
 
 
-class MealCombinationSerializer(serializers.Serializer):
+class HalfCourseCombSerializer(serializers.Serializer):
     bread = ItemSerializer()
     curry = ItemSerializer()
