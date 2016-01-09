@@ -1,24 +1,24 @@
-name,price
-Aloo gobi,170
-Aloo baingan,170
-Aloo gobi,170
-Aloo Matar,170
-Aloo methi,170
-Amritsari fish,250
-Biryani,220
-Butter Chicken,220
-Chana masala,150
-Chapathi,15
-Chicken Razala,200
-Chole bhature,15
-Dal makhani,60
-Dal fry with tadka,65
-Gobhi matar,100
-Mushroom do pyaza,150
-Naan,15
-Palak Daal,60
-Palak Paneer,60
-Paneer butter masala,120
-Paneer Tikka Masala,120
-Rice,50
+name,price,category
+Aloo gobi,170,curry
+Aloo baingan,170,curry
+Aloo gobi,170,curry
+Aloo Matar,170,curry
+Aloo methi,170,curry
+Amritsari fish,250,curry
+Biryani,220,main course
+Butter Chicken,220,curry
+Chana masala,150,curry
+Chapathi,15,bread
+Chicken Razala,200,curry
+Chole bhature,15,curry
+Dal makhani,60,curry
+Dal fry with tadka,65,curry
+Gobhi matar,100,curry
+Mushroom do pyaza,150,curry
+Naan,15,bread
+Palak Daal,60,curry
+Palak Paneer,60,curry
+Paneer butter masala,120,curry
+Paneer Tikka Masala,120,curry
+Rice,50,main course
 

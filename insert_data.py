@@ -21,7 +21,7 @@ for hotel in hotels:
         # rating = record['rating']
         rating = int(random()*1000)%6
         price = int(record['price']) + (int(random()*100)%10 - 5)
-        category = ''
+        category = record['category']
         veg = True
         Item(hotel_name=hotel_name,
                 name=name,
