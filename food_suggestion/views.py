@@ -1,5 +1,3 @@
-from django.shortcuts import render
-
 from food_suggestion.serializers import ItemSerializer
 from rest_framework import status
 from rest_framework.response import Response
@@ -11,26 +9,33 @@ from food_suggestion.models import Item
 def get_all_items(request):
     if request.method == 'GET':
         s = Item.objects.all()
-        ser = ItemSerializer(s, many=True)
-        return Response(ser.data)
+        serializer = ItemSerializer(s, many=True)
+        return Response(serializer.data)
     elif request.method == 'POST':
-        ser = ItemSerializer(data=request.data)
-        if ser.is_valid():
-            ser.save()
-            return Response(ser.data, status=status.HTTP_201_CREATED)
-        return Response(ser.errors, status=status.HTTP_400_BAD_REQUEST)
+        serializer = ItemSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['GET', 'PATCH'])
 def get_item(request, item_id):
     if request.method == 'GET':
         item = Item.objects.get(pk=item_id)
-        ser = ItemSerializer(item)
-        return Response(ser.data)
+        serializer = ItemSerializer(item)
+        return Response(serializer.data)
     elif request.method == 'PATCH':
         item = Item.objects.get(pk=item_id)
-        ser = ItemSerializer(item, data=request.data, partial=True)
-        if ser.is_valid():
-            ser.save()
-            return Response(ser.data, status=status.HTTP_201_CREATED)
-        return Response(ser.errors, status=status.HTTP_400_BAD_REQUEST)
+        serializer = ItemSerializer(item, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['GET'])
+def get_suggestions(request, hotel_name, money, people):
+    items = Item.objects.filter(hotel_name=hotel_name)
+    serializer = ItemSerializer(items, many=True)
+    return Response(serializer.data)
