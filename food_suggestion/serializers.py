@@ -5,3 +5,8 @@ class ItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = Item
         fields = ('id', 'hotel_name', 'name', 'rating', 'price', 'category', 'veg')
+
+
+class MealCombinationSerializer(serializers.Serializer):
+    bread = ItemSerializer()
+    curry = ItemSerializer()

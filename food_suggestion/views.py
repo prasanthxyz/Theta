@@ -1,8 +1,9 @@
-from food_suggestion.serializers import ItemSerializer
 from rest_framework import status
-from rest_framework.response import Response
 from rest_framework.decorators import api_view
+from rest_framework.response import Response
+
 from food_suggestion.models import Item
+from food_suggestion.serializers import ItemSerializer, MealCombinationSerializer
 
 
 @api_view(['GET', 'POST'])
@@ -35,7 +36,51 @@ def get_item(request, item_id):
 
 
 @api_view(['GET'])
-def get_suggestions(request, hotel_name, money, people):
-    items = Item.objects.filter(hotel_name=hotel_name)
-    serializer = ItemSerializer(items, many=True)
+def get_suggestions(request, hotel_name, money, people, option):
+    money = int(money)
+    people = int(people)
+    option = int(option)
+
+    # category
+    # BREAKFAST = 0
+    # STARTER = 1
+    # MEAL = 2
+    # DESSERT = 4
+
+    if option == 0:
+        # breakfast
+        # enthelum return cheyth ozhivakkanam.
+        pass
+
+    # meal, starter, dessert
+    split_table = {
+        1: [0, 0, 100],
+        2: [0, 100, 0],
+        3: [60, 40, 0],
+        4: [100, 0, 0],
+        5: [0, 50, 50],
+        6: [75, 0, 25],
+        7: [50, 30, 20]
+    }
+
+    split = split_table[option]
+    meal_money = money * split[0]
+    starter_money = money * split[1]
+    dessert_money = money * split[2]
+
+    items = Item.objects.filter(hotel_name=hotel_name, price__lte=(money / people))
+    meal_combs = get_meal_combs(items, meal_money)
+    serializer = MealCombinationSerializer(meal_combs, many=True)
     return Response(serializer.data)
+
+
+def get_meal_combs(items, money):
+    half_courses = items.filter(category='half course').order_by('rating')
+    curries = items.filter(category='curry').order_by('rating')
+    combs = []
+    for half_course in half_courses:
+        rem_money = money - half_course.price
+        possible_curries = curries.filter(price__lte=rem_money)
+        for pos_cur in possible_curries:
+            combs.append({'bread': half_course, 'curry': pos_cur})
+    return combs
