@@ -77,9 +77,9 @@ def get_suggestions_helper(hotels, money, people, option):
     }
 
     split = split_table[option]
-    meal_money = money * split[0]
-    starter_money = money * split[1]
-    dessert_money = money * split[2]
+    meal_money = float(money * split[0]) / 100
+    starter_money = float(money * split[1]) / 100
+    dessert_money = float(money * split[2]) / 100
 
     # items = Item.objects.filter(hotel_name=hotel_name, price__lte=(money/people))
     items = Item.objects.filter(price__lte=(money / people))
@@ -118,54 +118,22 @@ def get_suggestions_helper(hotels, money, people, option):
             meal = meals[hotel][0]
             dessert = desserts[hotel][0]
             id += 1
-            suggestions.append(
-                    {
-                        "id": id,
-                        "hotel": hotel,
-                        "dishes": [starter['name'], meal['name'], dessert['name']],
-                        "cost": (float(starter['price']) + float(meal['price']) + float(dessert['price'])),
-                        "rating": starter['rating'] + meal['rating'] + dessert['rating']
-                    }
-            )
+            append_suggestions(suggestions, id, hotel, starter, meal, dessert)
             starter = starters[hotel][0]
             meal = meals[hotel][0]
             dessert = desserts[hotel][1]
             id += 1
-            suggestions.append(
-                    {
-                        "id": id,
-                        "hotel": hotel,
-                        "dishes": [starter['name'], meal['name'], dessert['name']],
-                        "cost": (float(starter['price']) + float(meal['price']) + float(dessert['price'])),
-                        "rating": starter['rating'] + meal['rating'] + dessert['rating']
-                    }
-            )
+            append_suggestions(suggestions, id, hotel, starter, meal, dessert)
             starter = starters[hotel][0]
             meal = meals[hotel][1]
             dessert = desserts[hotel][0]
             id += 1
-            suggestions.append(
-                    {
-                        "id": id,
-                        "hotel": hotel,
-                        "dishes": [starter['name'], meal['name'], dessert['name']],
-                        "cost": (float(starter['price']) + float(meal['price']) + float(dessert['price'])),
-                        "rating": starter['rating'] + meal['rating'] + dessert['rating']
-                    }
-            )
+            append_suggestions(suggestions, id, hotel, starter, meal, dessert)
             starter = starters[hotel][1]
             meal = meals[hotel][0]
             dessert = desserts[hotel][0]
             id += 1
-            suggestions.append(
-                    {
-                        "id": id,
-                        "hotel": hotel,
-                        "dishes": [starter['name'], meal['name'], dessert['name']],
-                        "cost": (float(starter['price']) + float(meal['price']) + float(dessert['price'])),
-                        "rating": starter['rating'] + meal['rating'] + dessert['rating']
-                    }
-            )
+            append_suggestions(suggestions, id, hotel, starter, meal, dessert)
         except IndexError:
             continue
 
@@ -174,17 +142,26 @@ def get_suggestions_helper(hotels, money, people, option):
     return Response(suggestions[:10])
 
 
+def append_suggestions(suggestions, id, hotel, starter, meal, dessert):
+    suggestions.append(
+            {
+                "id": id,
+                "hotel": hotel,
+                "dishes": [starter['name'], meal['name'], dessert['name']],
+                "cost": (float(starter['price']) + float(meal['price']) + float(dessert['price'])),
+                "rating": starter['rating'] + meal['rating'] + dessert['rating']
+            }
+    )
+
 
 @api_view(['GET'])
-def get_suggestions_for_hotel(request, hotel, money, people, option):
-    hotels = [hotel]
+def get_suggestions(request, hotel, money, people, option):
+    if hotel == 'any':
+        hotels = list(get_all_hotels_list())
+    else:
+        hotels = [hotel]
     return get_suggestions_helper(hotels, money, people, option)
 
-
-@api_view(['GET'])
-def get_suggestions(request, money, people, option):
-    hotels = list(get_all_hotels_list())
-    return get_suggestions_helper(hotels, money, people, option)
 
 
 def get_half_course_curry_combs(items, money, hotel):
@@ -211,7 +188,7 @@ def get_half_course_curry_combs_temp(items, money, hotel):
     curries = items.filter(category='curry', hotel_name=hotel).order_by('-rating')
     combs = []
     for half_course in half_courses:
-        rem_money = money - half_course.price
+        rem_money = money - float(half_course.price)
         possible_curries = curries.filter(price__lte=rem_money)
         for pos_cur in possible_curries:
             combs.append({'half_course': half_course, 'curry': pos_cur})
