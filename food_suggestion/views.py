@@ -145,7 +145,11 @@ def get_suggestions_helper(hotels, money, people, option, veg):
     return Response(suggestions[:10])
 
 
-def append_suggestions(suggestions, id, hotel, starter, meal, dessert):
+def append_suggestions(suggestions, id, hotel, starter, meal, dessert, img_id=''):
+    if img_id == '':
+        thumb = 'img/cover.jpg'
+    else:
+        thumb = '/static/' + img_id + '.jpg'
     suggestions.append(
             {
                 "id": id,
@@ -153,7 +157,8 @@ def append_suggestions(suggestions, id, hotel, starter, meal, dessert):
                 "dishes": [starter['name'], meal['name'], dessert['name']],
                 "cost": (float(starter['price']) + float(meal['price']) + float(dessert['price'])),
                 "rating": starter['rating'] + meal['rating'] + dessert['rating'],
-                "veg": starter['veg'] & meal['veg'] & dessert['veg']
+                "veg": starter['veg'] & meal['veg'] & dessert['veg'],
+                "thumb": thumb
             }
     )
 
@@ -165,7 +170,6 @@ def get_suggestions(request, hotel, money, people, option, veg):
     else:
         hotels = [hotel]
     return get_suggestions_helper(hotels, money, people, option, veg)
-
 
 
 def get_half_course_curry_combs(items, money, hotel):
@@ -182,7 +186,7 @@ def get_half_course_curry_combs(items, money, hotel):
         meals.append({'name': comb['half_course'].name + ' and ' + comb['curry'].name,
                       'price': comb['half_course'].price + comb['curry'].price,
                       'rating': (comb['half_course'].rating + comb['curry'].rating) / 2,
-                      'veg': (comb['half_course'].veg & comb['curry'].veg),
+                      'veg': (comb['half_course'].veg & comb['curry'].veg)
                       })
     return meals
 
