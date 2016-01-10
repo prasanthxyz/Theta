@@ -54,7 +54,7 @@ def get_item(request, item_id):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-def get_suggestions_helper(hotels, money, people, option):
+def get_suggestions_helper(hotels, money, people, option, veg):
     money = int(money)
     people = int(people)
     option = int(option)
@@ -82,7 +82,10 @@ def get_suggestions_helper(hotels, money, people, option):
     dessert_money = float(money * split[2]) / 100
 
     # items = Item.objects.filter(hotel_name=hotel_name, price__lte=(money/people))
-    items = Item.objects.filter(price__lte=(money / people))
+    if veg == 'true':
+        items = Item.objects.filter(price__lte=(money / people), veg=True)
+    else:
+        items = Item.objects.filter(price__lte=(money / people))
 
     meals = {}
     starters = {}
@@ -149,18 +152,19 @@ def append_suggestions(suggestions, id, hotel, starter, meal, dessert):
                 "hotel": hotel,
                 "dishes": [starter['name'], meal['name'], dessert['name']],
                 "cost": (float(starter['price']) + float(meal['price']) + float(dessert['price'])),
-                "rating": starter['rating'] + meal['rating'] + dessert['rating']
+                "rating": starter['rating'] + meal['rating'] + dessert['rating'],
+                "veg": starter['veg'] & meal['veg'] & dessert['veg']
             }
     )
 
 
 @api_view(['GET'])
-def get_suggestions(request, hotel, money, people, option):
+def get_suggestions(request, hotel, money, people, option, veg):
     if hotel == 'any':
         hotels = list(get_all_hotels_list())
     else:
         hotels = [hotel]
-    return get_suggestions_helper(hotels, money, people, option)
+    return get_suggestions_helper(hotels, money, people, option, veg)
 
 
 
