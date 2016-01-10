@@ -109,39 +109,77 @@ def get_suggestions(request, money, people, option):
         meals[hotel] = h_meals
 
         h_starters = items.filter(category='starter', hotel_name=hotel, price__lte=(starter_money / people)).order_by(
-            '-rating')
+                '-rating')
         h_starters_serializer = ItemSerializer(h_starters, many=True)
         starters[hotel] = h_starters_serializer.data
 
         h_desserts = items.filter(category='dessert', hotel_name=hotel, price__lte=(dessert_money / people)).order_by(
-            '-rating')
+                '-rating')
         h_desserts_serializer = ItemSerializer(h_desserts, many=True)
         desserts[hotel] = h_desserts_serializer.data
 
     suggestions = []
+
+    id = 1
 
     for hotel in hotels:
         try:
             starter = starters[hotel][0]
             meal = meals[hotel][0]
             dessert = desserts[hotel][0]
-            suggestions.append([hotel, starter, meal, dessert, starter['rating'] + meal['rating'] + dessert['rating']])
+            id += 1
+            suggestions.append(
+                    {
+                        "id": id,
+                        "hotel": hotel,
+                        "dishes": [starter['name'], meal['name'], dessert['name']],
+                        "cost": (float(starter['price']) + float(meal['price']) + float(dessert['price'])),
+                        "rating": starter['rating'] + meal['rating'] + dessert['rating']
+                    }
+            )
             starter = starters[hotel][0]
             meal = meals[hotel][0]
             dessert = desserts[hotel][1]
-            suggestions.append([hotel, starter, meal, dessert, starter['rating'] + meal['rating'] + dessert['rating']])
+            id += 1
+            suggestions.append(
+                    {
+                        "id": id,
+                        "hotel": hotel,
+                        "dishes": [starter['name'], meal['name'], dessert['name']],
+                        "cost": (float(starter['price']) + float(meal['price']) + float(dessert['price'])),
+                        "rating": starter['rating'] + meal['rating'] + dessert['rating']
+                    }
+            )
             starter = starters[hotel][0]
             meal = meals[hotel][1]
             dessert = desserts[hotel][0]
-            suggestions.append([hotel, starter, meal, dessert, starter['rating'] + meal['rating'] + dessert['rating']])
+            id += 1
+            suggestions.append(
+                    {
+                        "id": id,
+                        "hotel": hotel,
+                        "dishes": [starter['name'], meal['name'], dessert['name']],
+                        "cost": (float(starter['price']) + float(meal['price']) + float(dessert['price'])),
+                        "rating": starter['rating'] + meal['rating'] + dessert['rating']
+                    }
+            )
             starter = starters[hotel][1]
             meal = meals[hotel][0]
             dessert = desserts[hotel][0]
-            suggestions.append([hotel, starter, meal, dessert, starter['rating'] + meal['rating'] + dessert['rating']])
+            id += 1
+            suggestions.append(
+                    {
+                        "id": id,
+                        "hotel": hotel,
+                        "dishes": [starter['name'], meal['name'], dessert['name']],
+                        "cost": (float(starter['price']) + float(meal['price']) + float(dessert['price'])),
+                        "rating": starter['rating'] + meal['rating'] + dessert['rating']
+                    }
+            )
         except IndexError:
             continue
 
-    suggestions = sorted(suggestions, key=itemgetter(4), reverse=True)
+    suggestions = sorted(suggestions, key=lambda x: x["rating"], reverse=True)
 
     return Response(suggestions[:10])
 
@@ -159,7 +197,7 @@ def get_half_course_curry_combs(items, money, hotel):
     for comb in combs:
         meals.append({'name': comb['half_course'].name + ' and ' + comb['curry'].name,
                       'price': comb['half_course'].price + comb['curry'].price,
-                      'rating': (comb['half_course'].rating + comb['curry'].rating)/2,
+                      'rating': (comb['half_course'].rating + comb['curry'].rating) / 2,
                       'veg': (comb['half_course'].veg & comb['curry'].veg),
                       })
     return meals
