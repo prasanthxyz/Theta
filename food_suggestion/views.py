@@ -5,8 +5,6 @@ from rest_framework.response import Response
 from food_suggestion.models import Item
 from food_suggestion.serializers import ItemSerializer, HalfCourseCombSerializer
 
-from operator import itemgetter
-
 
 @api_view(['GET', 'POST'])
 def get_all_items(request):
@@ -56,8 +54,7 @@ def get_item(request, item_id):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-@api_view(['GET'])
-def get_suggestions(request, money, people, option):
+def get_suggestions_helper(hotels, money, people, option):
     money = int(money)
     people = int(people)
     option = int(option)
@@ -67,11 +64,6 @@ def get_suggestions(request, money, people, option):
     # STARTER = 1
     # MEAL = 2
     # DESSERT = 4
-
-    if option == 0:
-        # breakfast
-        # enthelum return cheyth ozhivakkanam.
-        pass
 
     # meal, starter, dessert
     split_table = {
@@ -91,8 +83,6 @@ def get_suggestions(request, money, people, option):
 
     # items = Item.objects.filter(hotel_name=hotel_name, price__lte=(money/people))
     items = Item.objects.filter(price__lte=(money / people))
-
-    hotels = list(get_all_hotels_list())
 
     meals = {}
     starters = {}
@@ -184,12 +174,25 @@ def get_suggestions(request, money, people, option):
     return Response(suggestions[:10])
 
 
+
+@api_view(['GET'])
+def get_suggestions_for_hotel(request, hotel, money, people, option):
+    hotels = [hotel]
+    return get_suggestions_helper(hotels, money, people, option)
+
+
+@api_view(['GET'])
+def get_suggestions(request, money, people, option):
+    hotels = list(get_all_hotels_list())
+    return get_suggestions_helper(hotels, money, people, option)
+
+
 def get_half_course_curry_combs(items, money, hotel):
     half_courses = items.filter(category='half course', hotel_name=hotel).order_by('-rating')
     curries = items.filter(category='curry', hotel_name=hotel).order_by('-rating')
     combs = []
     for half_course in half_courses:
-        rem_money = money - half_course.price
+        rem_money = money - float(half_course.price)
         possible_curries = curries.filter(price__lte=rem_money)
         for pos_cur in possible_curries:
             combs.append({'half_course': half_course, 'curry': pos_cur})
