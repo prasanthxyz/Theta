@@ -60,25 +60,24 @@ def get_suggestions_helper(hotels, money, people, option, veg):
     option = int(option)
 
     # category
-    # BREAKFAST = 0
     # STARTER = 1
     # MEAL = 2
     # DESSERT = 4
 
-    # meal, starter, dessert
+    # starter, meal, dessert
     split_table = {
-        1: [0, 0, 100],
+        1: [100, 0, 0],
         2: [0, 100, 0],
-        3: [60, 40, 0],
-        4: [100, 0, 0],
-        5: [0, 50, 50],
-        6: [75, 0, 25],
-        7: [50, 30, 20]
+        3: [40, 60, 0],
+        4: [0, 0, 100],
+        5: [50, 0, 50],
+        6: [0, 75, 25],
+        7: [30, 50, 20]
     }
 
     split = split_table[option]
-    meal_money = float(money * split[0]) / 100
-    starter_money = float(money * split[1]) / 100
+    starter_money = float(money * split[0]) / 100
+    meal_money = float(money * split[1]) / 100
     dessert_money = float(money * split[2]) / 100
 
     # items = Item.objects.filter(hotel_name=hotel_name, price__lte=(money/people))
@@ -103,6 +102,7 @@ def get_suggestions_helper(hotels, money, people, option, veg):
 
         h_starters = items.filter(category='starter', hotel_name=hotel, price__lte=(starter_money / people)).order_by(
                 '-rating')
+
         h_starters_serializer = ItemSerializer(h_starters, many=True)
         starters[hotel] = h_starters_serializer.data
 
@@ -110,33 +110,89 @@ def get_suggestions_helper(hotels, money, people, option, veg):
                 '-rating')
         h_desserts_serializer = ItemSerializer(h_desserts, many=True)
         desserts[hotel] = h_desserts_serializer.data
-
     suggestions = []
 
     id = 1
 
     for hotel in hotels:
         try:
-            starter = starters[hotel][0]
-            meal = meals[hotel][0]
-            dessert = desserts[hotel][0]
-            id += 1
-            append_suggestions(suggestions, id, hotel, starter, meal, dessert)
-            starter = starters[hotel][0]
-            meal = meals[hotel][0]
-            dessert = desserts[hotel][1]
-            id += 1
-            append_suggestions(suggestions, id, hotel, starter, meal, dessert)
-            starter = starters[hotel][0]
-            meal = meals[hotel][1]
-            dessert = desserts[hotel][0]
-            id += 1
-            append_suggestions(suggestions, id, hotel, starter, meal, dessert)
-            starter = starters[hotel][1]
-            meal = meals[hotel][0]
-            dessert = desserts[hotel][0]
-            id += 1
-            append_suggestions(suggestions, id, hotel, starter, meal, dessert)
+            if len(starters[hotel]) > 0:
+                starter0 = starters[hotel][0]
+            else:
+                starter0 = None
+            if len(meals[hotel]) > 0:
+                meal0 = meals[hotel][0]
+            else:
+                meal0 = None
+            if len(desserts[hotel]) > 0:
+                dessert0 = desserts[hotel][0]
+            else:
+                dessert0 = None
+
+            if len(starters[hotel]) > 1:
+                starter1 = starters[hotel][1]
+            else:
+                starter1 = None
+            if len(meals[hotel]) > 1:
+                meal1 = meals[hotel][1]
+            else:
+                meal1 = None
+            if len(desserts[hotel]) > 1:
+                dessert1 = desserts[hotel][1]
+            else:
+                dessert1 = None
+
+            if option == 1:
+                id += 1
+                append_suggestions(suggestions, id, hotel, starter0, None, None)
+                id += 1
+                append_suggestions(suggestions, id, hotel, starter1, None, None)
+            elif option == 2:
+                id += 1
+                append_suggestions(suggestions, id, hotel, None, meal0, None)
+                id += 1
+                append_suggestions(suggestions, id, hotel, None, meal1, None)
+            elif option == 4:
+                id += 1
+                append_suggestions(suggestions, id, hotel, None, None, dessert0)
+                id += 1
+                append_suggestions(suggestions, id, hotel, None, None, dessert1)
+            elif option == 3:
+                id += 1
+                append_suggestions(suggestions, id, hotel, starter0, meal0, None)
+                id += 1
+                append_suggestions(suggestions, id, hotel, starter1, meal0, None)
+                id += 1
+                append_suggestions(suggestions, id, hotel, starter0, meal1, None)
+                id += 1
+                append_suggestions(suggestions, id, hotel, starter1, meal1, None)
+            elif option == 5:
+                id += 1
+                append_suggestions(suggestions, id, hotel, starter0, None, dessert0)
+                id += 1
+                append_suggestions(suggestions, id, hotel, starter1, None, dessert0)
+                id += 1
+                append_suggestions(suggestions, id, hotel, starter0, None, dessert1)
+                id += 1
+                append_suggestions(suggestions, id, hotel, starter1, None, dessert1)
+            elif option == 6:
+                id += 1
+                append_suggestions(suggestions, id, hotel, None, meal0, dessert0)
+                id += 1
+                append_suggestions(suggestions, id, hotel, None, meal1, dessert0)
+                id += 1
+                append_suggestions(suggestions, id, hotel, None, meal0, dessert1)
+                id += 1
+                append_suggestions(suggestions, id, hotel, None, meal1, dessert1)
+            else:
+                id += 1
+                append_suggestions(suggestions, id, hotel, starter0, meal0, dessert0)
+                id += 1
+                append_suggestions(suggestions, id, hotel, starter1, meal0, dessert0)
+                id += 1
+                append_suggestions(suggestions, id, hotel, starter0, meal1, dessert0)
+                id += 1
+                append_suggestions(suggestions, id, hotel, starter0, meal0, dessert1)
         except IndexError:
             continue
 
@@ -239,9 +295,7 @@ def upload(request):
 
         reader = rows
         for hotel in hotels:
-            print(reader)
             for record in reader:
-                print record
                 # hotel_name = record['hotel_name']
                 hotel_name = hotel
                 name = record[0]
@@ -250,7 +304,6 @@ def upload(request):
                 price = int(record[1]) + (int(random() * 100) % 10 - 5)
                 category = record[2]
                 veg = False if record[3].strip() == '0' else True
-                print veg
                 Item(hotel_name=hotel_name,
                      name=name,
                      rating=rating,
