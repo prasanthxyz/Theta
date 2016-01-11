@@ -146,21 +146,49 @@ def get_suggestions_helper(hotels, money, people, option, veg):
 
 
 def append_suggestions(suggestions, id, hotel, starter, meal, dessert, img_id=''):
+    import random
+    img_id = int(random.random() * 10) % 4 + 1
     if img_id == '':
         thumb = 'img/cover.jpg'
     else:
-        thumb = '/static/' + img_id + '.jpg'
-    suggestions.append(
-            {
-                "id": id,
-                "hotel": hotel,
-                "dishes": [starter['name'], meal['name'], dessert['name']],
-                "cost": (float(starter['price']) + float(meal['price']) + float(dessert['price'])),
-                "rating": starter['rating'] + meal['rating'] + dessert['rating'],
-                "veg": starter['veg'] & meal['veg'] & dessert['veg'],
-                "thumb": thumb
-            }
-    )
+        thumb = 'http://theta-appl.azurewebsites.net/static/' + str(img_id) + '.jpg'
+    dishes = []
+    price1 = 0
+    price2 = 0
+    price3 = 0
+    rating1 = 0
+    rating2 = 0
+    rating3 = 0
+    veg1 = True
+    veg2 = True
+    veg3 = True
+    if starter:
+        dishes.append(starter['name'])
+        price1 += float(starter['price'])
+        rating1 += (starter['rating'])
+        veg1 = starter['veg']
+    if meal:
+        dishes.append(meal['name'])
+        price2 += float(meal['price'])
+        rating2 += (meal['rating'])
+        veg2 = meal['veg']
+    if dessert:
+        dishes.append(dessert['name'])
+        price3 += float(dessert['price'])
+        rating3 += (dessert['rating'])
+        veg3 = dessert['veg']
+    if len(dishes) > 0:
+        suggestions.append(
+                {
+                    "id": id,
+                    "hotel": hotel,
+                    "dishes": dishes,
+                    "cost": (price1 + price2 + price3),
+                    "rating": (rating1 + rating2 + rating3),
+                    "veg": (veg1 & veg2 & veg3),
+                    "thumb": thumb
+                }
+        )
 
 
 @api_view(['GET'])
