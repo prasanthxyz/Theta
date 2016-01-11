@@ -191,6 +191,50 @@ def get_half_course_curry_combs(items, money, hotel):
     return meals
 
 
+from django.http import HttpResponse
+from django.views.decorators.csrf import csrf_exempt
+import os
+import csv
+import sys
+from random import random
+
+
+@csrf_exempt
+def upload(request):
+    if request.method == 'POST':
+        formdata = request.POST.get('db').strip()
+        rows = []
+        for row in formdata.split('\n'):
+            rows.append(row.split(','))
+        from food_suggestion.models import Item
+        hotels = ['The Beatle, Hiranandani', 'Gurukripa', 'Sigree Global Grill', 'Mehman Nawazi', 'Mirchi And Mime']
+
+        reader = rows
+        for hotel in hotels:
+            print(reader)
+            for record in reader:
+                print record
+                # hotel_name = record['hotel_name']
+                hotel_name = hotel
+                name = record[0]
+                # rating = record['rating']
+                rating = int(random() * 1000) % 6
+                price = int(record[1]) + (int(random() * 100) % 10 - 5)
+                category = record[2]
+                veg = False if record[3].strip() == '0' else True
+                print veg
+                Item(hotel_name=hotel_name,
+                     name=name,
+                     rating=rating,
+                     price=price,
+                     category=category,
+                     veg=veg).save()
+        return HttpResponse('done')
+    else:
+        return HttpResponse(
+            "<form method='post'><textarea name='db'> </textarea><button type='submit' value='submit'>Submit</button></form>")
+
+
 def get_half_course_curry_combs_temp(items, money, hotel):
     half_courses = items.filter(category='half course', hotel_name=hotel).order_by('-rating')
     curries = items.filter(category='curry', hotel_name=hotel).order_by('-rating')
